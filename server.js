@@ -93,23 +93,70 @@ app.post("/callback", async (req, res) => {
 
     console.log("TSR callback:", req.body);
 
+    const statusCode = parseInt(req.body.status);
+    const request_id = req.body.request_id;
+    const value = parseInt(req.body.value);
+
     try {
 
-        const result = await axios.post(
-            "http://shopluongcuong.rf.gd/api/card.php?i=1",
-            qs.stringify(req.body),
-            {
-                headers: {
-                    "Content-Type": "application/x-www-form-urlencoded"
-                }
-            }
+        const [rows] = await db.query(
+            "SELECT * FROM cards WHERE code=?",
+            [request_id]
         );
 
-        console.log("Website response:", result.data);
+        if(rows.length === 0){
+            console.log("Không tìm thấy giao dịch");
+            return res.send("OK");
+        }
 
-    } catch (err) {
+        const card = rows[0];
 
-        console.log("Update error:", err.message);
+        if(card.status !== "xuly"){
+            console.log("Giao dịch đã xử lý trước đó");
+            return res.send("OK");
+        }
+
+        const username = card.username;
+
+        if(statusCode === 1){
+
+            await db.query(
+                "UPDATE cards SET status='thanhcong', thucnhan=? WHERE id=?",
+                [value, card.id]
+            );
+
+            await db.query(
+                "UPDATE users SET money = money + ?, total_money = total_money + ? WHERE username=?",
+                [value, value, username]
+            );
+
+            console.log("Cộng tiền thành công:", value);
+
+        }
+        else if(statusCode === 2){
+
+            await db.query(
+                "UPDATE cards SET status='saimenhgia' WHERE id=?",
+                [card.id]
+            );
+
+            console.log("Sai mệnh giá");
+
+        }
+        else{
+
+            await db.query(
+                "UPDATE cards SET status='thatbai' WHERE id=?",
+                [card.id]
+            );
+
+            console.log("Thẻ thất bại");
+
+        }
+
+    } catch(err){
+
+        console.log("Database error:", err.message);
 
     }
 
