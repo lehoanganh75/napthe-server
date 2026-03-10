@@ -4,6 +4,7 @@ const express = require("express");
 const axios = require("axios");
 const crypto = require("crypto");
 const qs = require("qs");
+const mysql = require("mysql2/promise");
 
 const app = express();
 
@@ -12,6 +13,14 @@ app.use(express.urlencoded({ extended: true }));
 
 const partner_id = "6459037486";
 const partner_key = process.env.PARTNER_KEY;
+
+/* kết nối MySQL */
+const db = mysql.createPool({
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASS,
+    database: process.env.DB_NAME
+});
 
 /* tạo sign */
 function createSign(code, serial) {
@@ -71,7 +80,10 @@ app.post("/napthe", async (req, res) => {
         res.json(result.data);
 
     } catch (err) {
+
+        console.log("TSR error:", err.message);
         res.status(500).json(err.message);
+
     }
 
 });
@@ -81,20 +93,30 @@ app.post("/callback", async (req, res) => {
 
     console.log("TSR callback:", req.body);
 
+    const { status, value, request_id } = req.body;
+
     try {
 
-        await axios.post(
-            "http://shopluongcuong.rf.gd/api/callback.php",
-            qs.stringify(req.body),
-            {
-                headers: {
-                    "Content-Type": "application/x-www-form-urlencoded"
-                }
-            }
-        );
+        if (status == 1) {
+
+            /* ví dụ request_id = user_id */
+            await db.query(
+                "UPDATE users SET money = money + ? WHERE id = ?",
+                [value, request_id]
+            );
+
+            console.log("Đã cộng tiền:", value);
+
+        } else {
+
+            console.log("Thẻ lỗi");
+
+        }
 
     } catch (err) {
-        console.log("Update error:", err.message);
+
+        console.log("Database error:", err.message);
+
     }
 
     res.send("OK");
