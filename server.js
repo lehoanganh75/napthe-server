@@ -84,7 +84,7 @@ app.post("/callback", async (req, res) => {
     try {
 
         await axios.post(
-            "http://luongcuongshop.rf.gd/api/callback.php",
+            "http://shopluongcuong.rf.gd/api/callback.php",
             qs.stringify(req.body),
             {
                 headers: {
