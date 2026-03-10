@@ -91,32 +91,25 @@ app.post("/napthe", async (req, res) => {
 /* nhận callback từ TSR */
 app.post("/callback", async (req, res) => {
 
-    console.log("TSR callback FULL:", JSON.stringify(req.body));
-
-    const status = req.body.status;
-    const value = req.body.value;
-    const request_id = req.body.request_id;
+    console.log("TSR callback:", req.body);
 
     try {
 
-        if (status == 1) {
+        const result = await axios.post(
+            "https://shopluongcuong.rf.gd/api/callback.php?i=1",
+            qs.stringify(req.body),
+            {
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded"
+                }
+            }
+        );
 
-            await db.query(
-                "UPDATE users SET money = money + ? WHERE id = ?",
-                [value, request_id]
-            );
-
-            console.log("Đã cộng tiền:", value);
-
-        } else {
-
-            console.log("Thẻ thất bại hoặc đang chờ");
-
-        }
+        console.log("Website response:", result.data);
 
     } catch (err) {
 
-        console.log("Database error:", err.message);
+        console.log("Update error:", err.message);
 
     }
 
