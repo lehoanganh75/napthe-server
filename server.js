@@ -96,7 +96,7 @@ app.post("/callback", async (req, res) => {
     try {
 
         const result = await axios.post(
-            "https://shopluongcuong.rf.gd/api/callback.php?i=1",
+            "https://shopluongcuong.rf.gd/api/card.php?i=1",
             qs.stringify(req.body),
             {
                 headers: {
