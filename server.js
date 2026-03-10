@@ -14,7 +14,6 @@ app.use(express.urlencoded({ extended: true }));
 const partner_id = "6459037486";
 const partner_key = process.env.PARTNER_KEY;
 
-<<<<<<< HEAD
 /* kết nối MySQL */
 const db = mysql.createPool({
     host: process.env.DB_HOST,
@@ -24,9 +23,6 @@ const db = mysql.createPool({
 });
 
 /* tạo sign */
-=======
-/* tạo sign TSR */
->>>>>>> 566e8076729a1e6a0b2d76009fd9b190816317bd
 function createSign(code, serial) {
     return crypto
         .createHash("md5")
@@ -101,7 +97,6 @@ app.post("/callback", async (req, res) => {
 
     try {
 
-<<<<<<< HEAD
         if (status == 1) {
 
             /* ví dụ request_id = user_id */
@@ -117,28 +112,10 @@ app.post("/callback", async (req, res) => {
             console.log("Thẻ lỗi");
 
         }
-=======
-        const r = await axios.post(
-            "https://shopluongcuong.rf.gd/api/callback.php",
-            qs.stringify(req.body),
-            {
-                headers: {
-                    "Content-Type": "application/x-www-form-urlencoded"
-                }
-            }
-        );
->>>>>>> 566e8076729a1e6a0b2d76009fd9b190816317bd
-
-        console.log("Website response:", r.data);
 
     } catch (err) {
 
-<<<<<<< HEAD
         console.log("Database error:", err.message);
-=======
-        console.log("Update error:", err.response?.status);
-        console.log("Update error data:", err.response?.data);
->>>>>>> 566e8076729a1e6a0b2d76009fd9b190816317bd
 
     }
 
