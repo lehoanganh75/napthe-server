@@ -1,12 +1,15 @@
+require("dotenv").config();
+
 const express = require("express");
 const axios = require("axios");
 const crypto = require("crypto");
+const qs = require("qs");
 
 const app = express();
 app.use(express.json());
 
 const partner_id = "6459037486";
-const partner_key = "c1203cb781e216a57119cf6a8c1f805d";
+const partner_key = process.env.PARTNER_KEY;
 
 function createSign(code, serial) {
     return crypto
@@ -14,6 +17,10 @@ function createSign(code, serial) {
         .update(partner_key + code + serial)
         .digest("hex");
 }
+
+app.get("/", (req,res)=>{
+    res.send("Nap the server running");
+});
 
 /* gửi thẻ lên TSR */
 app.post("/napthe", async (req, res) => {
@@ -25,7 +32,7 @@ app.post("/napthe", async (req, res) => {
         code: req.body.code,
         serial: req.body.serial,
         amount: req.body.amount,
-        request_id: Date.now() + Math.floor(Math.random()*1000),
+        request_id: req.body.request_id,
         partner_id: partner_id,
         sign: sign
     };
@@ -45,7 +52,6 @@ app.post("/napthe", async (req, res) => {
 
 });
 
-
 /* callback */
 app.post("/callback", async (req, res) => {
 
@@ -54,15 +60,15 @@ app.post("/callback", async (req, res) => {
     try {
 
         await axios.post(
-            "http://luongcuongshop.rf.gd/api/update.php",
-            req.body
+            "http://luongcuongshop.rf.gd/api/callback.php",
+            qs.stringify(req.body)
         );
 
     } catch(err){
         console.log("Update error:", err.message);
     }
 
-    res.send("ok");
+    res.send("OK");
 
 });
 
