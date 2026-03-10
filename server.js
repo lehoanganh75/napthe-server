@@ -6,11 +6,14 @@ const crypto = require("crypto");
 const qs = require("qs");
 
 const app = express();
+
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 const partner_id = "6459037486";
 const partner_key = process.env.PARTNER_KEY;
 
+/* tạo sign */
 function createSign(code, serial) {
     return crypto
         .createHash("md5")
@@ -18,8 +21,24 @@ function createSign(code, serial) {
         .digest("hex");
 }
 
-app.get("/", (req,res)=>{
+/* test server */
+app.get("/", (req, res) => {
     res.send("Nap the server running");
+});
+
+/* lấy IP server */
+app.get("/ip", async (req, res) => {
+    try {
+        const r = await axios.get("https://api.ipify.org?format=json");
+        res.json(r.data);
+    } catch (err) {
+        res.status(500).send(err.message);
+    }
+});
+
+/* test callback */
+app.get("/callback", (req, res) => {
+    res.send("Callback endpoint working");
 });
 
 /* gửi thẻ lên TSR */
@@ -41,7 +60,12 @@ app.post("/napthe", async (req, res) => {
 
         const result = await axios.post(
             "https://thesieure.com/chargingws/v2",
-            data
+            qs.stringify(data),
+            {
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded"
+                }
+            }
         );
 
         res.json(result.data);
@@ -52,7 +76,7 @@ app.post("/napthe", async (req, res) => {
 
 });
 
-/* callback */
+/* nhận callback từ TSR */
 app.post("/callback", async (req, res) => {
 
     console.log("TSR callback:", req.body);
@@ -61,10 +85,15 @@ app.post("/callback", async (req, res) => {
 
         await axios.post(
             "http://luongcuongshop.rf.gd/api/callback.php",
-            qs.stringify(req.body)
+            qs.stringify(req.body),
+            {
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded"
+                }
+            }
         );
 
-    } catch(err){
+    } catch (err) {
         console.log("Update error:", err.message);
     }
 
@@ -72,4 +101,8 @@ app.post("/callback", async (req, res) => {
 
 });
 
-app.listen(3000);
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+    console.log("Server running on port", PORT);
+});
