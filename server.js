@@ -91,15 +91,16 @@ app.post("/napthe", async (req, res) => {
 /* nhận callback từ TSR */
 app.post("/callback", async (req, res) => {
 
-    console.log("TSR callback:", req.body);
+    console.log("TSR callback FULL:", JSON.stringify(req.body));
 
-    const { status, value, request_id } = req.body;
+    const status = req.body.status;
+    const value = req.body.value;
+    const request_id = req.body.request_id;
 
     try {
 
         if (status == 1) {
 
-            /* ví dụ request_id = user_id */
             await db.query(
                 "UPDATE users SET money = money + ? WHERE id = ?",
                 [value, request_id]
@@ -109,7 +110,7 @@ app.post("/callback", async (req, res) => {
 
         } else {
 
-            console.log("Thẻ lỗi");
+            console.log("Thẻ thất bại hoặc đang chờ");
 
         }
 
