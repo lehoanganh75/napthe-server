@@ -13,7 +13,7 @@ app.use(express.urlencoded({ extended: true }));
 const partner_id = "6459037486";
 const partner_key = process.env.PARTNER_KEY;
 
-/* tạo sign */
+/* tạo sign TSR */
 function createSign(code, serial) {
     return crypto
         .createHash("md5")
@@ -71,7 +71,10 @@ app.post("/napthe", async (req, res) => {
         res.json(result.data);
 
     } catch (err) {
+
+        console.log("TSR error:", err.message);
         res.status(500).json(err.message);
+
     }
 
 });
@@ -83,8 +86,8 @@ app.post("/callback", async (req, res) => {
 
     try {
 
-        await axios.post(
-            "http://shopluongcuong.rf.gd/api/callback.php",
+        const r = await axios.post(
+            "https://shopluongcuong.rf.gd/api/callback.php",
             qs.stringify(req.body),
             {
                 headers: {
@@ -93,8 +96,13 @@ app.post("/callback", async (req, res) => {
             }
         );
 
+        console.log("Website response:", r.data);
+
     } catch (err) {
-        console.log("Update error:", err.message);
+
+        console.log("Update error:", err.response?.status);
+        console.log("Update error data:", err.response?.data);
+
     }
 
     res.send("OK");
